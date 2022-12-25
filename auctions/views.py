@@ -70,10 +70,16 @@ def create(request):
     if request.method == "GET":
         return render(request, "auctions/create.html")
     if request.method == "POST":
-        item_name = request.POST.get("title", "")
+        item_name = request.POST.get("name", "")
         price = request.POST.get("price", "")
+        context = {}
         if item_name == "":
-            return HttpResponse("Please include item name")
+            context = {
+                "message": "Please include item name"
+            }
         if price == "":
-            return HttpResponse("Please include auction price")
-        return render(request, "auctions/create.html")
+            context = {
+                "message": "Please include auction price"
+            }
+        Listing.objects.create(seller=request.user, item_name=item_name, price=price)
+        return render(request, "auctions/create.html", context)
