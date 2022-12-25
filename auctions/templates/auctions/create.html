@@ -1,0 +1,23 @@
+{% extends "auctions/layout.html" %} 
+
+{% block title %} 
+    Create New Listings
+{% endblock %}
+
+{% block body %}
+   <h1>Create New Listing</h1>
+
+    {% if user.is_authenticated %}
+   <form action="{% url 'create' %}" method"post">
+        {% csrf_token %}
+        <input class="form-input" type="text" name="name" placeholder="Item name">
+        <input class="form-input" type="number" name="price" placeholder="Price">
+        <input type="submit" value="submit"
+   </form>
+    {% else %}
+        Please login to create a new listing.
+        <a href="{% url 'login' %}"">
+            <button>Login</button>
+        </a>
+    {% endif %}
+{% endblock %}
