@@ -2,11 +2,9 @@
 
 {% block body %}
     <h2>Active Listings</h2>
-    <ol>
     {% for listing in listings %}
-        <li>
-            {{ listing.item_name }} 
-        </li>
+
+        {% include "auctions/item_card.html" with show_link=True %}
+
     {% endfor %}
-    </ol>
 {% endblock %}

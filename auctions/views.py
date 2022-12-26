@@ -8,7 +8,7 @@ from .models import User, Listing
 
 
 def index(request):
-    listings = Listing.objects.all()
+    listings = Listing.objects.all()[::-1]
     context =  {
         "listings": listings
     }
@@ -66,12 +66,19 @@ def register(request):
     else:
         return render(request, "auctions/register.html")
 
+
 def create(request):
     if request.method == "GET":
         return render(request, "auctions/create.html")
     if request.method == "POST":
         item_name = request.POST.get("name", "")
         price = request.POST.get("price", "")
+        description = request.POST.get("description", "")
+        file_object = request.FILES['listing-image']
+        file_bytes = file_object.file.getvalue()
+        file_name = file_object.name
+        with open("auctions/static/auctions/media/"+file_name, "wb") as f:
+            f.write(file_bytes)
         context = {}
         if item_name == "":
             context = {
@@ -81,5 +88,18 @@ def create(request):
             context = {
                 "message": "Please include auction price"
             }
-        Listing.objects.create(seller=request.user, item_name=item_name, price=price)
+        Listing.objects.create(seller=request.user, item_name=item_name, description=description, price=price, image_name=file_name)
         return render(request, "auctions/create.html", context)
+
+
+def detail(request, item_id):
+    listing = Listing.objects.get(id=item_id)
+    context = {
+        "listing": listing,
+    }
+    return render(request, "auctions/detail.html", context)
+
+def delete(request, item_id):
+    Listing.objects.get(id=item_id).delete()
+    return redirect(index)
+

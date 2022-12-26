@@ -1,22 +1,38 @@
-{% extends "auctions/layout.html" %} 
+{% extends "auctions/layout.html" %}
 
-{% block title %} 
+{% block title %}
     Create New Listings
 {% endblock %}
 
 {% block body %}
-   <h1>Create New Listing</h1>
-
+    <h1>Create New Listing</h1>
     {% if user.is_authenticated %}
-   <form action="{% url 'create' %}" method="post">
-        {% csrf_token %}
-        <input class="form-input" type="text" name="name" placeholder="Item name">
-        <input class="form-input" type="number" name="price" placeholder="Price">
-        <input type="submit" value="Submit">
-        {% if message %}
-            <div>{{ message }}</div>
-        {% endif %}
-   </form>
+        <form action="{% url 'create' %}" method="post" enctype="multipart/form-data">
+            {% csrf_token %}
+
+            <div class="form-field">
+                <label class="form-elm" for="name">Item name:</label>
+                <input class="form-elm" type="text" name="name" placeholder="Item name">
+            </div>
+            <div class="form-field">
+                <label class="form-elm" for="name">Description:</label>
+                <textarea class="form-elm" type="text" name="description" placeholder="Item description"></textarea>
+            </div>
+            <div class="form-field">
+                <label class="form-elm" for="name">Price:</label>
+                <input class="form-elm" type="number" name="price" placeholder="Price">
+            </div>
+            <div class="form-field">
+                <label class="form-elm" for="name">Image:</label>
+                <input class="form-elm" type="file" name="listing-image">
+            </div>
+            <div class="form-field">
+                <input class="form-elm" type="submit" value="Submit">
+            </div>
+            {% if message %}
+                <div>{{ message }}</div>
+            {% endif %}
+        </form>
     {% else %}
         <a href="{% url 'login' %}">
             <button>Login</button>

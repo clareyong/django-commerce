@@ -1,0 +1,15 @@
+{% extends "auctions/layout.html" %}
+
+{% block title %}
+    {{ listing.item_name }}
+{% endblock %}
+
+{% block body %}
+    <h1>Details of {{ listing.item_name }}</h1>
+    {% include "auctions/item_card.html" with show_link=False %}
+    {% if user.is_authenticated and user.get_username == listing.seller.username %}
+        <div class="box">
+            <a href="{% url 'delete' listing.id %}">Delete</a>
+        </div>
+    {% endif %}
+{% endblock %}
