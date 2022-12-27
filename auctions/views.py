@@ -1,6 +1,6 @@
 from django.contrib.auth import authenticate, login, logout
 from django.db import IntegrityError
-from django.http import HttpResponse, HttpResponseRedirect
+from django.http import HttpResponse, HttpResponseRedirect, HttpResponseForbidden
 from django.shortcuts import render, redirect
 from django.urls import reverse
 
@@ -9,7 +9,7 @@ from .models import User, Listing
 
 def index(request):
     listings = Listing.objects.all()[::-1]
-    context =  {
+    context = {
         "listings": listings
     }
     return render(request, "auctions/index.html", context)
@@ -77,7 +77,7 @@ def create(request):
         file_object = request.FILES['listing-image']
         file_bytes = file_object.file.getvalue()
         file_name = file_object.name
-        with open("auctions/static/auctions/media/"+file_name, "wb") as f:
+        with open("auctions/static/auctions/media/" + file_name, "wb") as f:
             f.write(file_bytes)
         context = {}
         if item_name == "":
@@ -88,7 +88,8 @@ def create(request):
             context = {
                 "message": "Please include auction price"
             }
-        Listing.objects.create(seller=request.user, item_name=item_name, description=description, price=price, image_name=file_name)
+        Listing.objects.create(seller=request.user, item_name=item_name, description=description, price=price,
+                               image_name=file_name)
         return render(request, "auctions/create.html", context)
 
 
@@ -99,7 +100,40 @@ def detail(request, item_id):
     }
     return render(request, "auctions/detail.html", context)
 
+
 def delete(request, item_id):
     Listing.objects.get(id=item_id).delete()
     return redirect(index)
 
+
+def edit(request, item_id):
+    listing = Listing.objects.get(id=item_id)
+    if request.method == "GET":
+        context = {
+            "listing": listing,
+        }
+        return render(request, "auctions/edit.html", context)
+    if request.method == "POST":
+        item_name = request.POST.get("name", "")
+        price = request.POST.get("price", "")
+        description = request.POST.get("description", "")
+        file_object = request.FILES.get('listing-image', None)
+        file_name = ""
+        if file_object is not None:
+            file_bytes = file_object.file.getvalue()
+            file_name = file_object.name
+            with open("auctions/static/auctions/media/" + file_name, "wb") as f:
+                f.write(file_bytes)
+        if item_name == "":
+            return HttpResponse("Please add item name")
+        if description == "":
+            return HttpResponse("Please add descriptions")
+        listing.item_name = item_name
+        listing.description = description
+        listing.price = price
+        if file_name != '':
+            listing.image_name = file_name
+        listing.save()
+        return redirect(detail, item_id)
+    else:
+        return HttpResponseForbidden()

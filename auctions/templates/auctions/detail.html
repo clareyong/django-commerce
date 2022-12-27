@@ -9,7 +9,15 @@
     {% include "auctions/item_card.html" with show_link=False %}
     {% if user.is_authenticated and user.get_username == listing.seller.username %}
         <div class="box">
-            <a href="{% url 'delete' listing.id %}">Delete</a>
+            <ul class="nav">
+                <li class="nav_item">
+                    <a class="nav-link" href="{% url 'delete' listing.id %}">Delete</a>
+                </li>
+                <li class="nav-item">
+                    <a class="nav-link" href="{% url 'edit' listing.id %}">Edit</a>
+                </li>
+            </ul>
         </div>
     {% endif %}
+
 {% endblock %}
