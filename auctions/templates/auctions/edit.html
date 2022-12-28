@@ -6,7 +6,7 @@
 
 {% block body %}
     <h1>Edit {{ listing.item_name }}</h1>
-    {% if user.is_authenticated %}
+    {% if user.is_authenticated and user.get_username == listing.seller.username %}
         <form action="{% url 'edit' listing.id %}" method="post" enctype="multipart/form-data">
             {% csrf_token %}
 

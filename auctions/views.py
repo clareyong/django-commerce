@@ -77,6 +77,8 @@ def create(request):
         file_object = request.FILES['listing-image']
         file_bytes = file_object.file.getvalue()
         file_name = file_object.name
+        number_of_bids = 0
+        current_bid = price
         with open("auctions/static/auctions/media/" + file_name, "wb") as f:
             f.write(file_bytes)
         context = {}
@@ -89,8 +91,8 @@ def create(request):
                 "message": "Please include auction price"
             }
         Listing.objects.create(seller=request.user, item_name=item_name, description=description, price=price,
-                               image_name=file_name)
-        return render(request, "auctions/create.html", context)
+                               image_name=file_name, number_of_bids=number_of_bids, current_bid=current_bid)
+        return render(request, "auctions/detail.html", context)
 
 
 def detail(request, item_id):
@@ -137,3 +139,25 @@ def edit(request, item_id):
         return redirect(detail, item_id)
     else:
         return HttpResponseForbidden()
+
+
+def bid(request, item_id):
+    listing = Listing.objects.get(id=item_id)
+    print('type is', type(listing.current_bid))
+    if request.method == 'POST':
+        current_bid = request.POST.get("current_bid", 0)
+        current_bid = int(current_bid)
+        print('curr', type(current_bid))
+        if current_bid > listing.current_bid:
+            listing.number_of_bids += 1
+            listing.current_bid = current_bid
+            listing.save()
+        else:
+            context = {
+                "message": "Please include auction price"
+            }
+            return render(request, "auctions/detail.html", context)
+        # else:
+        #     return HttpResponse("Bi")
+    return redirect(detail, item_id)
+
