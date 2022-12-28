@@ -9,6 +9,8 @@
     {% include "auctions/item_card.html" with show_link=False %}
     {% if user.is_authenticated and user.get_username == listing.seller.username %}
         <div class="box">
+            <p>Number of bids: {{ listing.number_of_bids }}</p>
+            <p>Highest bid: ${{ listing.current_bid }}</p>
             <ul class="nav">
                 <li class="nav_item">
                     <a class="nav-link" href="{% url 'delete' listing.id %}">Delete</a>
@@ -17,6 +19,20 @@
                     <a class="nav-link" href="{% url 'edit' listing.id %}">Edit</a>
                 </li>
             </ul>
+        </div>
+    {% elif user.is_authenticated %}
+        <div class="box">
+            <p>{{ listing.number_of_bids }} bids so far. Your bid is the current bid.</p>
+            <form action="{% url 'bid' listing.id %}" method="post">
+                {% csrf_token %}
+                <input class="form-elm" name="current_bid" placeholder="Bid">
+                <div class="form-field">
+                    <input class="form-elm" type="submit" value="Submit">
+                </div>
+                {% if message %}
+                    <div>{{ message }}</div>
+                {% endif %}
+            </form>
         </div>
     {% endif %}
 

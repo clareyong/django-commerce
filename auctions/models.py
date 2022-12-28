@@ -14,6 +14,8 @@ class Listing(models.Model):
     image_name = models.CharField(max_length=100, null=True)
     created_at = models.DateTimeField(auto_now_add=True, null=True)
     modified_at = models.DateTimeField(auto_now=True, null=True)
+    number_of_bids = models.IntegerField(default=0)
+    current_bid = models.BigIntegerField(default=0)
 
     def __str__(self):
         return f"{self.item_name}"
