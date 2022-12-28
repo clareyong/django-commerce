@@ -22,8 +22,16 @@
         </div>
     {% elif user.is_authenticated %}
         <div class="box">
-            <p>{{ listing.number_of_bids }} bids so far. Your bid is the current bid.</p>
-            <form action="{% url 'bid' listing.id %}" method="post">
+            <p> Current highest bid: ${{ listing.current_bid }}</p>
+            <p>
+                {{ listing.number_of_bids }} bids so far.
+                {% if listing.bidder.id == user.id %}
+                    Your bid is the highest bid.
+                {% else %}
+                    Your bid is not the highest bid.
+                {% endif %}
+            </p>
+            <form method="post">
                 {% csrf_token %}
                 <input class="form-elm" name="current_bid" placeholder="Bid">
                 <div class="form-field">

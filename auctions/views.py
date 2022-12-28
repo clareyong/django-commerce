@@ -4,6 +4,7 @@ from django.http import HttpResponse, HttpResponseRedirect, HttpResponseForbidde
 from django.shortcuts import render, redirect
 from django.urls import reverse
 
+
 from .models import User, Listing
 
 
@@ -92,15 +93,38 @@ def create(request):
             }
         Listing.objects.create(seller=request.user, item_name=item_name, description=description, price=price,
                                image_name=file_name, number_of_bids=number_of_bids, current_bid=current_bid)
-        return render(request, "auctions/detail.html", context)
+        return render(request, "auctions/detail_and_bid.html", context)
 
 
-def detail(request, item_id):
+def detail_and_bid(request, item_id):
+    if not request.user.is_authenticated:
+        return redirect(login_view)
     listing = Listing.objects.get(id=item_id)
-    context = {
-        "listing": listing,
-    }
-    return render(request, "auctions/detail.html", context)
+    print('type is', type(listing.current_bid))
+    if request.method == 'GET':
+        context = {
+            "listing": listing,
+        }
+        return render(request, "auctions/detail_and_bid.html", context)
+    elif request.method == 'POST':
+        current_bid = request.POST.get("current_bid", 0)
+        current_bid = int(current_bid)
+        print('curr', type(current_bid))
+        if current_bid > listing.current_bid:
+            listing.number_of_bids += 1
+            listing.bidder = request.user
+            listing.current_bid = current_bid
+            listing.save()
+            return redirect(detail_and_bid, item_id)
+        else:
+            context = {
+                "listing": listing,
+                "message": "Please bid higher than previous current bid",
+            }
+            return render(request, "auctions/detail_and_bid.html", context)
+    else:
+        return HttpResponseForbidden()
+
 
 
 def delete(request, item_id):
@@ -136,28 +160,6 @@ def edit(request, item_id):
         if file_name != '':
             listing.image_name = file_name
         listing.save()
-        return redirect(detail, item_id)
+        return redirect(detail_and_bid, item_id)
     else:
         return HttpResponseForbidden()
-
-
-def bid(request, item_id):
-    listing = Listing.objects.get(id=item_id)
-    print('type is', type(listing.current_bid))
-    if request.method == 'POST':
-        current_bid = request.POST.get("current_bid", 0)
-        current_bid = int(current_bid)
-        print('curr', type(current_bid))
-        if current_bid > listing.current_bid:
-            listing.number_of_bids += 1
-            listing.current_bid = current_bid
-            listing.save()
-        else:
-            context = {
-                "message": "Please include auction price"
-            }
-            return render(request, "auctions/detail.html", context)
-        # else:
-        #     return HttpResponse("Bi")
-    return redirect(detail, item_id)
-

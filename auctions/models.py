@@ -7,7 +7,7 @@ class User(AbstractUser):
 
 
 class Listing(models.Model):
-    seller = models.ForeignKey("User", on_delete=models.CASCADE)
+    seller = models.ForeignKey("User", on_delete=models.CASCADE, related_name="possessions")
     item_name = models.CharField(max_length=64)
     description = models.CharField(max_length=100, null=True)
     price = models.BigIntegerField()
@@ -16,6 +16,7 @@ class Listing(models.Model):
     modified_at = models.DateTimeField(auto_now=True, null=True)
     number_of_bids = models.IntegerField(default=0)
     current_bid = models.BigIntegerField(default=0)
+    bidder = models.ForeignKey("User", on_delete=models.SET_NULL, null=True, related_name="winning_bids")
 
     def __str__(self):
         return f"{self.item_name}"

@@ -12,14 +12,14 @@
     </div>
     <div class="column">
         {% if show_link %}
-            <a href="{% url 'detail' listing.id %}">
+            <a href="{% url 'detail-and-bid' listing.id %}">
                 <h3>{{ listing.item_name }}</h3>
             </a>
         {% else %}
             <h3>{{ listing.item_name }}</h3>
         {% endif %}
         <p>{{ listing.description }}</p>
-        <p>Price: {{ listing.price }}</p>
+        <p>Price: ${{ listing.price }}</p>
         <p class="small-text">Seller username: {{ listing.seller }}</p>
         <p class="small-text">Created at: {{ listing.created_at }}</p>
         <p class="small-text">Modified at: {{ listing.modified_at }}</p>
