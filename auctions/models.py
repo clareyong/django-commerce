@@ -21,8 +21,14 @@ class Listing(models.Model):
     def __str__(self):
         return f"{self.item_name}"
 
-# class Listing():
-#     pass
+
+class Watchlist(models.Model):
+    bidder = models.ForeignKey("User", on_delete=models.SET_NULL, null=True, related_name="bidder")
+    item_id = models.ForeignKey("Listing", on_delete=models.SET_NULL, null=True, related_name="item_id")
+
+    def __str__(self):
+        return f"{self.bidder}: {self.item_id}"
+
 
 # class Bids():
 #     pass
