@@ -23,6 +23,13 @@
         <p class="small-text">Seller username: {{ listing.seller }}</p>
         <p class="small-text">Created at: {{ listing.created_at }}</p>
         <p class="small-text">Modified at: {{ listing.modified_at }}</p>
+        {% if not listing.is_active and listing.bidder == request.user %}
+            <p>Congratulations, you have won this auction!</p>
+        {% elif not listing.is_active and listing.bidder != request.user %}
+            <p>This bid has been closed. Sorry, you did not win this auction.</p>
+        {% else %}
+            <p>Open</p>
+        {% endif %}
     </div>
 </div>
 

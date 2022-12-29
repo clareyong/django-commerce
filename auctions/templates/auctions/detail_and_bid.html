@@ -12,13 +12,21 @@
             <p>Number of bids: {{ listing.number_of_bids }}</p>
             <p>Highest bid: ${{ listing.current_bid }}</p>
             <ul class="nav">
-                <li class="nav_item">
-                    <a class="nav-link" href="{% url 'delete' listing.id %}">Delete</a>
-                </li>
+                {% if listing.is_active %}
+                    <li class="nav_item">
+                        <a class="nav-link" href="{% url 'delete' listing.id %}">Delete</a>
+                    </li>
+                {% endif %}
                 <li class="nav-item">
                     <a class="nav-link" href="{% url 'edit' listing.id %}">Edit</a>
                 </li>
+                <li class="nav-item">
+                    <a class="nav-link" href="{% url 'close' listing.id %}">Close</a>
+                </li>
             </ul>
+            {% if listing.is_active == False %}
+                <p>This listing has been closed.</p>
+            {% endif %}
         </div>
     {% elif user.is_authenticated %}
         <div class="box">
@@ -33,7 +41,7 @@
             </p>
             <form method="post">
                 {% csrf_token %}
-                <input class="form-elm" name="current_bid" placeholder="Bid">
+                <input type="number" class="form-elm" name="current_bid" placeholder="Bid">
                 <div class="form-field">
                     <input class="form-elm" type="submit" value="Submit">
                 </div>

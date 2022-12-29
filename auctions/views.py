@@ -100,7 +100,6 @@ def detail_and_bid(request, item_id):
     if not request.user.is_authenticated:
         return redirect(login_view)
     listing = Listing.objects.get(id=item_id)
-    watchlist = Watchlist
     if request.method == 'GET':
         context = {
             "listing": listing,
@@ -109,28 +108,37 @@ def detail_and_bid(request, item_id):
     elif request.method == 'POST':
         current_bid = request.POST.get("current_bid", 0)
         current_bid = int(current_bid)
-        if current_bid > listing.current_bid:
+        if current_bid > listing.current_bid and current_bid >= listing.price:
             listing.number_of_bids += 1
             listing.bidder = request.user
             listing.current_bid = current_bid
             listing.save()
-            watchlist.bidder = request.user
-            watchlist.item_id = listing.id
-            watchlist.save()
+            if not Watchlist.objects.filter(bidder=request.user, item=listing).count():
+                Watchlist.objects.create(bidder=request.user, item=listing)
             return redirect(detail_and_bid, item_id)
         else:
-            context = {
-                "listing": listing,
-                "message": "Please bid higher than previous current bid",
-            }
+            if current_bid < listing.price:
+                context = {
+                    "listing": listing,
+                    "message": "Please bid higher than the current price.",
+                }
+            else:
+                context = {
+                    "listing": listing,
+                    "message": "Please bid higher than previous current bid"
+                }
             return render(request, "auctions/detail_and_bid.html", context)
     else:
         return HttpResponseForbidden()
 
 
 def delete(request, item_id):
-    Listing.objects.get(id=item_id).delete()
-    return redirect(index)
+    listing = Listing.objects.get(id=item_id)
+    if listing.is_active:
+        listing.delete()
+        return redirect(index)
+    else:
+        return HttpResponseForbidden()
 
 
 def edit(request, item_id):
@@ -164,4 +172,22 @@ def edit(request, item_id):
         return redirect(detail_and_bid, item_id)
     else:
         return HttpResponseForbidden()
+
+
+def watchlist(request):
+    if not request.user.is_authenticated:
+        return HttpResponseForbidden()
+    watchlists = Watchlist.objects.filter(bidder=request.user)[::-1]
+    context = {
+        "watchlists": watchlists
+    }
+    return render(request, "auctions/watchlist.html", context)
+
+
+def close(request, item_id):
+    listing = Listing.objects.get(id=item_id)
+    listing.is_active = False
+    listing.save()
+    return redirect(detail_and_bid, item_id)
+
 

@@ -17,17 +17,18 @@ class Listing(models.Model):
     number_of_bids = models.IntegerField(default=0)
     current_bid = models.BigIntegerField(default=0)
     bidder = models.ForeignKey("User", on_delete=models.SET_NULL, null=True, related_name="winning_bids")
+    is_active = models.BooleanField(default=True)
 
     def __str__(self):
         return f"{self.item_name}"
 
 
 class Watchlist(models.Model):
-    bidder = models.ForeignKey("User", on_delete=models.SET_NULL, null=True, related_name="bidder")
-    item_id = models.ForeignKey("Listing", on_delete=models.SET_NULL, null=True, related_name="item_id")
+    bidder = models.ForeignKey("User", on_delete=models.SET_NULL, null=True)
+    item = models.ForeignKey("Listing", on_delete=models.SET_NULL, null=True)
 
     def __str__(self):
-        return f"{self.bidder}: {self.item_id}"
+        return f"{self.bidder}: {self.item}"
 
 
 # class Bids():
