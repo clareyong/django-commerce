@@ -6,7 +6,7 @@
 
 {% block body %}
     <h1>Details of {{ listing.item_name }}</h1>
-    {% include "auctions/item_card.html" with show_link=False %}
+    {% include "auctions/item_card.html" with show_link=False%}
     {% if user.is_authenticated and user.get_username == listing.seller.username %}
         <div class="box">
             <p>Number of bids: {{ listing.number_of_bids }}</p>
@@ -42,6 +42,17 @@
             <form method="post">
                 {% csrf_token %}
                 <input type="number" class="form-elm" name="current_bid" placeholder="Bid">
+                <div class="form-field">
+                    <input class="form-elm" type="submit" value="Submit">
+                </div>
+                {% if message %}
+                    <div>{{ message }}</div>
+                {% endif %}
+            </form>
+
+            <form method="post">
+                {% csrf_token %}
+                <input type="text" class="form-elm" name="comment" placeholder="Add a comment">
                 <div class="form-field">
                     <input class="form-elm" type="submit" value="Submit">
                 </div>

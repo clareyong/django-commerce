@@ -9,7 +9,7 @@ from .models import User, Listing, Watchlist
 
 
 def index(request):
-    listings = Listing.objects.all()[::-1]
+    listings = Listing.objects.filter(is_active=True)[::-1]
     context = {
         "listings": listings
     }
@@ -93,10 +93,10 @@ def create(request):
             }
         Listing.objects.create(seller=request.user, item_name=item_name, description=description, price=price,
                                image_name=file_name, number_of_bids=number_of_bids, current_bid=current_bid)
-        return render(request, "auctions/detail_and_bid.html", context)
+        return render(request, "auctions/detail.html", context)
 
 
-def detail_and_bid(request, item_id):
+def detail(request, item_id):
     if not request.user.is_authenticated:
         return redirect(login_view)
     listing = Listing.objects.get(id=item_id)
@@ -104,7 +104,7 @@ def detail_and_bid(request, item_id):
         context = {
             "listing": listing,
         }
-        return render(request, "auctions/detail_and_bid.html", context)
+        return render(request, "auctions/detail.html", context)
     elif request.method == 'POST':
         current_bid = request.POST.get("current_bid", 0)
         current_bid = int(current_bid)
@@ -115,7 +115,7 @@ def detail_and_bid(request, item_id):
             listing.save()
             if not Watchlist.objects.filter(bidder=request.user, item=listing).count():
                 Watchlist.objects.create(bidder=request.user, item=listing)
-            return redirect(detail_and_bid, item_id)
+            return redirect(detail, item_id)
         else:
             if current_bid < listing.price:
                 context = {
@@ -127,7 +127,7 @@ def detail_and_bid(request, item_id):
                     "listing": listing,
                     "message": "Please bid higher than previous current bid"
                 }
-            return render(request, "auctions/detail_and_bid.html", context)
+            return render(request, "auctions/detail.html", context)
     else:
         return HttpResponseForbidden()
 
@@ -169,7 +169,7 @@ def edit(request, item_id):
         if file_name != '':
             listing.image_name = file_name
         listing.save()
-        return redirect(detail_and_bid, item_id)
+        return redirect(detail, item_id)
     else:
         return HttpResponseForbidden()
 
@@ -184,10 +184,23 @@ def watchlist(request):
     return render(request, "auctions/watchlist.html", context)
 
 
+def inventory(request):
+    if not request.user.is_authenticated:
+        return HttpResponseForbidden()
+    inventories = Listing.objects.filter(seller=request.user)[::-1]
+    context = {
+        "inventories": inventories
+    }
+    return render(request, "auctions/inventory.html", context)
+
+
 def close(request, item_id):
     listing = Listing.objects.get(id=item_id)
     listing.is_active = False
     listing.save()
-    return redirect(detail_and_bid, item_id)
+    return redirect(detail, item_id)
 
+
+def comment(request):
+    pass
 

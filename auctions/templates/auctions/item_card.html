@@ -12,7 +12,7 @@
     </div>
     <div class="column">
         {% if show_link %}
-            <a href="{% url 'detail-and-bid' listing.id %}">
+            <a href="{% url 'detail' listing.id %}">
                 <h3>{{ listing.item_name }}</h3>
             </a>
         {% else %}
@@ -23,13 +23,20 @@
         <p class="small-text">Seller username: {{ listing.seller }}</p>
         <p class="small-text">Created at: {{ listing.created_at }}</p>
         <p class="small-text">Modified at: {{ listing.modified_at }}</p>
-        {% if not listing.is_active and listing.bidder == request.user %}
-            <p>Congratulations, you have won this auction!</p>
-        {% elif not listing.is_active and listing.bidder != request.user %}
-            <p>This bid has been closed. Sorry, you did not win this auction.</p>
-        {% else %}
-            <p>Open</p>
-        {% endif %}
+        <p class="small-text">
+            {% if listing.is_active %}
+                Open
+            {% elif not listing.is_active %}
+                {% if listing.bidder == request.user %}
+                    Congratulations, you have won this auction!
+                {% elif listing.seller == request.user %}
+                    Closed
+                {% else %}
+                    This bid has been closed. Sorry, you did not win this auction.
+                {% endif %}
+            {% endif %}
+        </p>
     </div>
 </div>
+
 

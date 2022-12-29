@@ -31,5 +31,12 @@ class Watchlist(models.Model):
         return f"{self.bidder}: {self.item}"
 
 
-# class Bids():
-#     pass
+class Comment(models.Model):
+    commenter = models.ForeignKey("User", on_delete=models.SET_NULL, null=True)
+    item = models.ForeignKey("Listing", on_delete=models.SET_NULL, null=True)
+    content = models.CharField(max_length=100, null=True)
+    created_at = models.DateTimeField(auto_now_add=True, null=True)
+
+    def __str__(self):
+        return f"{self.content}"
+
