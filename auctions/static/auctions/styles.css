@@ -5,7 +5,7 @@ body {
 .box {
   width: 90%;
   height: 400px;
-  margin: 2em;
+  margin: 1em;
 }
 
 .with-border {
@@ -19,10 +19,22 @@ body {
   padding: 2em;
 }
 
+.column-small {
+  float: left;
+  height: inherit;
+  padding: 0.8em;
+}
+
 .listing-image {
   height: 100%;
   max-height:100%;
   max-width: 500px;
+}
+
+.small_box {
+  width: 90%;
+  height: 100px;
+  margin: 2em;
 }
 
 .form-field {
@@ -42,3 +54,12 @@ p.small-text {
   line-height: 80%;
 }
 
+p.small-padding {
+  line-height: 1px;
+  display: inline;
+}
+
+h6 {
+  font-weight: bold;
+  display: inline;
+}

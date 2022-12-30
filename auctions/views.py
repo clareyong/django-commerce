@@ -4,8 +4,7 @@ from django.http import HttpResponse, HttpResponseRedirect, HttpResponseForbidde
 from django.shortcuts import render, redirect
 from django.urls import reverse
 
-
-from .models import User, Listing, Watchlist
+from .models import User, Listing, Watchlist, Comment
 
 
 def index(request):
@@ -91,18 +90,21 @@ def create(request):
             context = {
                 "message": "Please include auction price"
             }
-        Listing.objects.create(seller=request.user, item_name=item_name, description=description, price=price,
-                               image_name=file_name, number_of_bids=number_of_bids, current_bid=current_bid)
-        return render(request, "auctions/detail.html", context)
+        listing = Listing.objects.create(seller=request.user, item_name=item_name, description=description, price=price,
+                                         image_name=file_name, number_of_bids=number_of_bids, current_bid=current_bid)
+        return redirect(detail, listing.id)
+        # return render(request, "auctions/detail.html", context)
 
 
 def detail(request, item_id):
     if not request.user.is_authenticated:
         return redirect(login_view)
     listing = Listing.objects.get(id=item_id)
+    comments = Comment.objects.filter(item=listing.id)
     if request.method == 'GET':
         context = {
             "listing": listing,
+            "comments": comments,
         }
         return render(request, "auctions/detail.html", context)
     elif request.method == 'POST':
@@ -201,6 +203,12 @@ def close(request, item_id):
     return redirect(detail, item_id)
 
 
-def comment(request):
-    pass
-
+def comment(request, item_id):
+    listing = Listing.objects.get(id=item_id)
+    if request.method == "POST":
+        content = request.POST.get("content", "")
+        if content != "":
+            Comment.objects.create(commenter=request.user, item=listing, content=content)
+        return redirect(detail, item_id)
+    else:
+        return HttpResponseForbidden()
