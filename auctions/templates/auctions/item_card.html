@@ -1,0 +1,42 @@
+{% load static %}
+<div class="box with-border">
+    <div class="column">
+        {% if not listing.image_name %}
+            <img class="listing-image"
+                 src="https://thealmanian.com/wp-content/uploads/2019/01/product_image_thumbnail_placeholder.png"
+                 alt="image_placeholder">
+        {% else %}
+            <img class="listing-image" src="{% static 'auctions/media/' %}{{ listing.image_name }}"
+                 alt={{ listing.item_name }}>
+        {% endif %}
+    </div>
+    <div class="column">
+        {% if show_link %}
+            <a href="{% url 'detail' listing.id %}">
+                <h3>{{ listing.item_name }}</h3>
+            </a>
+        {% else %}
+            <h3>{{ listing.item_name }}</h3>
+        {% endif %}
+        <p>{{ listing.description }}</p>
+        <p>Price: ${{ listing.price }}</p>
+        <p class="small-text">Seller username: {{ listing.seller }}</p>
+        <p class="small-text">Created at: {{ listing.created_at }}</p>
+        <p class="small-text">Modified at: {{ listing.modified_at }}</p>
+        <p class="small-text">
+            {% if listing.is_active %}
+                Open
+            {% elif not listing.is_active %}
+                {% if listing.bidder == request.user %}
+                    Congratulations, you have won this auction!
+                {% elif listing.seller == request.user %}
+                    Closed
+                {% else %}
+                    This bid has been closed. Sorry, you did not win this auction.
+                {% endif %}
+            {% endif %}
+        </p>
+    </div>
+</div>
+
+

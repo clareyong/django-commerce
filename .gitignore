@@ -1,2 +1,8 @@
+**/*.zip
+**/__MACOSX/
+**/.DS_Store
+.idea
 **/__pycache__/
+*.pyc
 db.sqlite3
+auctions/static/auctions/media/

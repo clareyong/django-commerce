@@ -1,0 +1,75 @@
+{% extends "auctions/layout.html" %}
+
+{% block title %}
+    {{ listing.item_name }}
+{% endblock %}
+
+{% block body %}
+    <h1>Details of {{ listing.item_name }}</h1>
+    {% include "auctions/item_card.html" with show_link=False%}
+    {% if user.is_authenticated and user.get_username == listing.seller.username %}
+        <div class="box column-small">
+            <p>Number of bids: {{ listing.number_of_bids }}</p>
+            <p>Highest bid: ${{ listing.current_bid }}</p>
+            <ul class="nav">
+                {% if listing.is_active %}
+                    <li class="nav_item">
+                        <a class="nav-link" href="{% url 'delete' listing.id %}">Delete</a>
+                    </li>
+                {% endif %}
+                <li class="nav-item">
+                    <a class="nav-link" href="{% url 'edit' listing.id %}">Edit</a>
+                </li>
+                <li class="nav-item">
+                    <a class="nav-link" href="{% url 'close' listing.id %}">Close</a>
+                </li>
+            </ul>
+            {% if listing.is_active == False %}
+                <p>This listing has been closed.</p>
+            {% endif %}
+        </div>
+    {% elif user.is_authenticated %}
+        <div class="box column-small">
+            <p> Current highest bid: ${{ listing.current_bid }}</p>
+            <p>
+                {{ listing.number_of_bids }} bids so far.
+                {% if listing.bidder.id == user.id %}
+                    Your bid is the highest bid.
+                {% else %}
+                    Your bid is not the highest bid.
+                {% endif %}
+            </p>
+            <form method="post">
+                {% csrf_token %}
+                <input type="number" name="current_bid" placeholder="Bid">
+                <input type="submit" value="      Bid      ">
+                {% if message %}
+                    <div>{{ message }}</div>
+                {% endif %}
+            </form>
+    {% endif %}
+        </div>
+
+    {% if user.is_authenticated %}
+        <div class="box column-small">
+            <form action="{% url 'comment' listing.id %}" method="post">
+                {% csrf_token %}
+                <input type="text" name="content" placeholder="Add a comment">
+                <input type="submit" value="Comment">
+            </form>
+        </div>
+    {% endif %}
+
+    <div class="box">
+    <h3>Comments:</h3>
+        {% if comments|length == 0 %}
+            <p>No comments...</p>
+        {% endif %}
+        {% for comment in comments|dictsortreversed:"created_at" %}
+            <h6>{{ comment.commenter }}:</h6>
+            <p class="small-padding">{{ comment.content }}</p>
+            <p class="small-text">{{ comment.created_at }}</p>
+        {% endfor %}
+    </div>
+
+{% endblock %}

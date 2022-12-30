@@ -1,15 +1,15 @@
 from django.contrib.auth import authenticate, login, logout
 from django.db import IntegrityError
-from django.http import HttpResponse, HttpResponseRedirect
-from django.shortcuts import render
+from django.http import HttpResponse, HttpResponseRedirect, HttpResponseForbidden
+from django.shortcuts import render, redirect
 from django.urls import reverse
 
-from .models import User, Listing
+from .models import User, Listing, Watchlist, Comment
 
 
 def index(request):
-    listings = Listing.objects.all()
-    context =  {
+    listings = Listing.objects.filter(is_active=True)[::-1]
+    context = {
         "listings": listings
     }
     return render(request, "auctions/index.html", context)
@@ -65,3 +65,150 @@ def register(request):
         return HttpResponseRedirect(reverse("index"))
     else:
         return render(request, "auctions/register.html")
+
+
+def create(request):
+    if request.method == "GET":
+        return render(request, "auctions/create.html")
+    if request.method == "POST":
+        item_name = request.POST.get("name", "")
+        price = request.POST.get("price", "")
+        description = request.POST.get("description", "")
+        file_object = request.FILES['listing-image']
+        file_bytes = file_object.file.getvalue()
+        file_name = file_object.name
+        number_of_bids = 0
+        current_bid = price
+        with open("auctions/static/auctions/media/" + file_name, "wb") as f:
+            f.write(file_bytes)
+        context = {}
+        if item_name == "":
+            context = {
+                "message": "Please include item name"
+            }
+        if price == "":
+            context = {
+                "message": "Please include auction price"
+            }
+        listing = Listing.objects.create(seller=request.user, item_name=item_name, description=description, price=price,
+                                         image_name=file_name, number_of_bids=number_of_bids, current_bid=current_bid)
+        return redirect(detail, listing.id)
+        # return render(request, "auctions/detail.html", context)
+
+
+def detail(request, item_id):
+    if not request.user.is_authenticated:
+        return redirect(login_view)
+    listing = Listing.objects.get(id=item_id)
+    comments = Comment.objects.filter(item=listing.id)
+    if request.method == 'GET':
+        context = {
+            "listing": listing,
+            "comments": comments,
+        }
+        return render(request, "auctions/detail.html", context)
+    elif request.method == 'POST':
+        current_bid = request.POST.get("current_bid", 0)
+        current_bid = int(current_bid)
+        if current_bid > listing.current_bid and current_bid >= listing.price:
+            listing.number_of_bids += 1
+            listing.bidder = request.user
+            listing.current_bid = current_bid
+            listing.save()
+            if not Watchlist.objects.filter(bidder=request.user, item=listing).count():
+                Watchlist.objects.create(bidder=request.user, item=listing)
+            return redirect(detail, item_id)
+        else:
+            if current_bid < listing.price:
+                context = {
+                    "listing": listing,
+                    "message": "Please bid higher than the current price.",
+                }
+            else:
+                context = {
+                    "listing": listing,
+                    "message": "Please bid higher than previous current bid"
+                }
+            return render(request, "auctions/detail.html", context)
+    else:
+        return HttpResponseForbidden()
+
+
+def delete(request, item_id):
+    listing = Listing.objects.get(id=item_id)
+    if listing.is_active:
+        listing.delete()
+        return redirect(index)
+    else:
+        return HttpResponseForbidden()
+
+
+def edit(request, item_id):
+    listing = Listing.objects.get(id=item_id)
+    if request.method == "GET":
+        context = {
+            "listing": listing,
+        }
+        return render(request, "auctions/edit.html", context)
+    if request.method == "POST":
+        item_name = request.POST.get("name", "")
+        price = request.POST.get("price", "")
+        description = request.POST.get("description", "")
+        file_object = request.FILES.get('listing-image', None)
+        file_name = ""
+        if file_object is not None:
+            file_bytes = file_object.file.getvalue()
+            file_name = file_object.name
+            with open("auctions/static/auctions/media/" + file_name, "wb") as f:
+                f.write(file_bytes)
+        if item_name == "":
+            return HttpResponse("Please add item name")
+        if description == "":
+            return HttpResponse("Please add descriptions")
+        listing.item_name = item_name
+        listing.description = description
+        listing.price = price
+        if file_name != '':
+            listing.image_name = file_name
+        listing.save()
+        return redirect(detail, item_id)
+    else:
+        return HttpResponseForbidden()
+
+
+def watchlist(request):
+    if not request.user.is_authenticated:
+        return HttpResponseForbidden()
+    watchlists = Watchlist.objects.filter(bidder=request.user)[::-1]
+    context = {
+        "watchlists": watchlists
+    }
+    return render(request, "auctions/watchlist.html", context)
+
+
+def inventory(request):
+    if not request.user.is_authenticated:
+        return HttpResponseForbidden()
+    inventories = Listing.objects.filter(seller=request.user)[::-1]
+    context = {
+        "inventories": inventories
+    }
+    return render(request, "auctions/inventory.html", context)
+
+
+def close(request, item_id):
+    listing = Listing.objects.get(id=item_id)
+    listing.is_active = False
+    listing.save()
+    return redirect(detail, item_id)
+
+
+def comment(request, item_id):
+    listing = Listing.objects.get(id=item_id)
+    if request.method == "POST":
+        content = request.POST.get("content", "")
+        if content != "":
+            Comment.objects.create(commenter=request.user, item=listing, content=content)
+        return redirect(detail, item_id)
+    else:
+        return HttpResponseForbidden()

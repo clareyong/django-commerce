@@ -1,0 +1,10 @@
+{% extends "auctions/layout.html" %}
+
+{% block body %}
+    <h2>Inventory</h2>
+    {% for inventory in inventories %}
+        {% with listing=inventory %}
+            {% include "auctions/item_card.html" with show_link=True%}
+        {% endwith %}
+    {% endfor %}
+{% endblock %}

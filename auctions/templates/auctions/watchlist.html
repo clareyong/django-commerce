@@ -1,0 +1,10 @@
+{% extends "auctions/layout.html" %}
+
+{% block body %}
+    <h2>Watchlist</h2>
+    {% for watchlist in watchlists %}
+        {% with listing=watchlist.item %}
+            {% include "auctions/item_card.html" with show_link=True%}
+        {% endwith %}
+    {% endfor %}
+{% endblock %}

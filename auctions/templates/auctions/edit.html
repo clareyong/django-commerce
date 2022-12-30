@@ -1,0 +1,41 @@
+{% extends "auctions/layout.html" %}
+
+{% block title %}
+    Edit {{ item_name }}
+{% endblock %}
+
+{% block body %}
+    <h1>Edit {{ listing.item_name }}</h1>
+    {% if user.is_authenticated and user.get_username == listing.seller.username %}
+        <form action="{% url 'edit' listing.id %}" method="post" enctype="multipart/form-data">
+            {% csrf_token %}
+
+            <div class="form-field">
+                <label class="form-elm" for="name">Item name:</label>
+                <input class="form-elm" type="text" name="name" placeholder="Item name" value="{{ listing.item_name }}">
+            </div>
+            <div class="form-field">
+                <label class="form-elm" for="name">Description:</label>
+                <textarea class="form-elm" type="text" name="description" placeholder="Item description">{{ listing.description }}</textarea>
+            </div>
+            <div class="form-field">
+                <label class="form-elm" for="name">Price:</label>
+                <input class="form-elm" type="number" name="price" placeholder="Price" value="{{ listing.price }}">
+            </div>
+            <div class="form-field">
+                <label class="form-elm" for="name">New image:</label>
+                <input class="form-elm" type="file" name="listing-image" value="{{ listing.image_name }}">
+            </div>
+            <div class="form-field">
+                <input class="form-elm" type="submit" value="Submit">
+            </div>
+            {% if message %}
+                <div>{{ message }}</div>
+            {% endif %}
+        </form>
+    {% else %}
+        <a href="{% url 'login' %}">
+            <button>Login</button>
+        </a>
+    {% endif %}
+{% endblock %}
